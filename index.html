@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Painel Iolanda Autoescola</title>
+
+  <base href="/" />
+
+  <meta name="viewport"
+    content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="msapplication-tap-highlight" content="no" />
+
+  <link rel="icon" type="image/x-icon" href="assets/icon/favicon.ico" />
+
+  <!-- add to homescreen for ios -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<link rel="stylesheet" href="styles.ec858d819cf6ad957cd8.css"></head>
+
+<body>
+  <app-root></app-root>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.9.1/docxtemplater.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.6.1/jszip.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.0.2/jszip-utils.js"></script>
+
+  <script>
+    function loadFile(url, callback) {
+      JSZipUtils.getBinaryContent(url, callback);
+    }
+
+    function generateLetter(customer) {
+      let url = '/assets/files/procuracao_base.docx';
+
+      if (customer.has_legal_representative) {
+        url = '/assets/files/procuracao_representante_base.docx';
+      }
+
+      loadFile(url, function (error, content) {
+        if (error) {
+          throw error;
+        }
+
+        var months = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro',
+          'outubro', 'novembro', 'dezembro'
+        ];
+        var date = new Date();
+
+        customer.day = date.getDate();
+        customer.month = months[date.getMonth()];
+        customer.year = date.getFullYear();
+
+        if (!customer.tel) {
+          customer.tel = customer.cel;
+        }
+
+        var zip = new JSZip(content);
+        var doc = new window.docxtemplater().loadZip(zip);
+        doc.setData(customer);
+
+        try {
+          doc.render();
+        } catch (error) {
+          var e = {
+            message: error.message,
+            name: error.name,
+            stack: error.stack,
+            properties: error.properties,
+          };
+          console.log(JSON.stringify({
+            error: e
+          }));
+
+          throw error;
+        }
+
+        var out = doc.getZip().generate({
+          type: 'blob',
+          mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        });
+
+        saveAs(out, 'Procuração ' + customer.name + '.docx');
+      });
+    }
+  </script>
+<script type="text/javascript" src="runtime.7ccc8429291af282a700.js"></script><script type="text/javascript" src="es2015-polyfills.8e8ac8256dbefc95b6ea.js" nomodule></script><script type="text/javascript" src="polyfills.2f49573b558e2cca223f.js"></script><script type="text/javascript" src="main.c7968a3d93909331a716.js"></script></body>
+
+</html>
